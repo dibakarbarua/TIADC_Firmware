@@ -1,0 +1,74 @@
+CODE FRAMEWORK:
+
+Code compenonents:
+
+1. LCD
+2. UART (both perfect)
+3. Sensor Tests (looks fine. only if the program doesnt skip reads. needs to be tested)
+4. Alarm State (was improper, changed it completely)
+5. alcohol detection alarm (perfectly fine)
+6. SPEAKERPLAY
+
+1. Sensor Tests:
+
+main() --> Configure all GPIOs as outputs, set necessary clocks ---> 
+configure the ADC sample sequence ONLY once ---> use a four line piece
+of code to re-read the ADC channels whenever needed ---> ALL channels will
+be read simultaneously whenver the trigger is called. USE whichever value needed.
+
+ADC re-read Code:
+
+ADCProcessorTrigger(..)
+while(!ADC..)
+{
+}
+
+ADCSequenceDataGet(...)
+
+Write this whenever you want to read the sensor. ALL SIMULTANEOUSLY.
+then use following:-
+
+
+temp[0]: button
+temp[1]: z axis
+temp[2]: x axis
+temp[3]: IR
+temp[4]: alcohol sensor
+
+channels: in the same order, 0 is button and 4 is alcohol. just recheck this in protoboard
+change it in the code where it says CHX in the ADCSequenceStepConfigure calls called at the
+beginning of main()
+
+Trigger Values:
+
+button: 1023- OFF
+        970 something- ON (liable to change as its floating)
+
+alcohol: 1023- detected
+
+IR: >/< 1000 as per calibration. run the ADC code in sample codes to check. 
+
+accelerometer: deltax / deltaz > 70
+
+STEPS to read SENSOR:
+
+very clear in the code:
+
+1. read IR 15 times and trigger if eyes closed for greater than 11. (SEE IF THIS IS OKAY)
+
+2. read alcohol sensor
+
+3. read delta X delta Z
+(Xref Zref calculated at te beginning of reset averaged 101 times)
+
+4. if deltaX / deltaz >70 --> reread these 10 times --> Trigger if delta is > 70 more than 7 times.
+
+ALARM STATE:
+
+1. read the button 800000 times.
+2. Check if button is pressed each time.
+3. if not pressed sound the alarm
+4. escape from loop if button is pressed / loop expires.
+5. check if i = 800000. ---> TRUE: STALL SYSTEM
+                        ---> FALSE: return to main()
+
